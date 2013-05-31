@@ -1,0 +1,44 @@
+
+{
+	"Parameter":
+	{
+		"ASC_CAR":-0.155,
+		"ASC_SM":0.00,
+		"ASC_TRAIN":-0.701,
+		"B_COST":-1.08,
+		"B_TIME":-1.28
+	},
+	
+	"Variable":
+	{
+		"TRAIN_TT_SCALED" : "TRAIN_TT",
+		"TRAIN_COST_SCALED" : "TRAIN_CO",
+		"SM_TT_SCALED" : "SM_TT",
+		"SM_COST_SCALED" : "SM_CO",
+		"CAR_TT_SCALED" : "CAR_TT",
+		"CAR_CO_SCALED" : "CAR_CO"
+	},
+	
+	"Choiceset" : ["Train", "Car", "Swissmetro"],
+	
+	"Utility":
+	{
+		"Train" : "ASC_TRAIN * 1 + B_TIME * TRAIN_TT_SCALED/100 + B_COST * TRAIN_COST_SCALED/100",
+		"Swissmetro" : "ASC_SM * 1 + B_TIME * SM_TT_SCALED/100 + B_COST * SM_COST_SCALED/100",
+		"Car" : "ASC_CAR * 1 + B_TIME * CAR_TT_SCALED/100 + B_COST * CAR_CO_SCALED/100"
+	},
+	
+	"Availability":
+	{
+		"Train" : "TRAIN_AV",
+		"Swissmetro" : "SM_AV",
+		"Car" : "CAR_AV"
+	},
+	
+	"Scale":
+	{
+		"Train" : 1,
+		"Swissmetro" : 1,
+		"Car" : 1
+	}
+}
