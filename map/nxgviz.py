@@ -66,38 +66,55 @@ def do_draw3(G, bbox, links=[]):
     window = pyglet.window.Window(resizable=True,width=800,height=600)
     pyglet.gl.glClearColor(1, 1, 1, 1)
     
+    pts = {}
+    for (u,v,d) in G.edges_iter(data=True):
+        xys = [G.graph['Points'][p] for p in d['points']]
+        pts[d['id']] = xys
+    
     @window.event
     def on_draw():
         window.clear()
         w2w, h2h = window.width/float(xx1-xx0), window.height/float(yy1-yy0)
 
         pyglet.gl.glColor4f(0,0,1,1)
-        #batch = pyglet.graphics.Batch()    
-        for (u,v,d) in G.edges_iter(data=True):
-            xys = [((x-xx0)*w2w,(y-yy0)*h2h) for x,y in [G.graph['Points'][p] for p in d['points']]]
-            pyglet.graphics.draw(len(xys), pyglet.gl.GL_LINES,('v2f', sum(xys,())))
+        batch = pyglet.graphics.Batch()
+        
+        for lnk in pts:
+            if links != None and lnk in links:
+                pyglet.gl.glColor4f(1,0,0,1)
+            else:
+                pyglet.gl.glColor4f(0,0,1,1)
             
+            xys = [((x-xx0)*w2w,(y-yy0)*h2h) for x,y in pts[lnk]]
+            pyglet.graphics.draw(len(xys), pyglet.gl.GL_LINE_STRIP,('v2f', sum(xys,())))
+            #batch.add(len(xys), pyglet.gl.GL_POINTS, None, ('v2f', sum(xys,())))
+        #batch.draw()
+        
     pyglet.app.run()
+
+def get_bbox(G):
+    lst = nx.get_edge_attributes(G,'points').values()
+    ps = [item for sublist in lst for item in sublist]
+    xs = [G.graph['Points'][p][0] for p in ps]
+    ys = [G.graph['Points'][p][1] for p in ps]
+    
+    import math
+    xx0,xx1 = math.floor(min(xs)*0.99), math.ceil(max(xs)*1.01)
+    yy0,yy1 = math.floor(min(ys)*0.99), math.ceil(max(ys)*1.01)
+    print 'actual:',min(xs),max(xs),min(ys),max(ys)
+    print 'bbox:',xx0,xx1,yy0,yy1
+    return (xx0,xx1,yy0,yy1)
 
 def do_main(fn_nxg, w=32, h=18, dpi=80, links=[]):
     gg = nx.read_gpickle(fn_nxg)
     src = gg.graph['Source'] if 'Source' in gg.graph else ''
     print 'G={nodes=%d, links=%d, source=%s, srid=%s, points=%d}' % (len(gg.nodes()),len(gg.edges()),src,gg.graph['SRID'],len(gg.graph['Points']))
 
-    l = nx.get_edge_attributes(gg,'points').values()
-    ps = [item for sublist in l for item in sublist]
-    xs = [gg.graph['Points'][p][0] for p in ps]
-    ys = [gg.graph['Points'][p][1] for p in ps]
-    
-    import math
-    xx0,xx1 = math.floor(min(xs)*0.99), math.ceil(max(xs)*1.01)
-    yy0,yy1 = math.floor(min(ys)*0.99), math.ceil(max(ys)*1.01)
-    print min(xs),max(xs),min(ys),max(ys)
-    print xx0,xx1,yy0,yy1
+    bbox = get_bbox(gg)
     
     #do_draw(gg,fn_nxg,w,h,dpi,links)
     #do_draw2(gg,width=w*dpi,height=h*dpi,links=links)
-    do_draw3(gg,(xx0,xx1,yy0,yy1),links=links)
+    do_draw3(gg,bbox,links=links)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
